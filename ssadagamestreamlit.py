@@ -3,7 +3,11 @@ import pandas as pd
 import requests
 import json
 from urllib.parse import quote
-import plotly.express as px
+# plotly 대신 matplotlib 사용
+import matplotlib.pyplot as plt
+
+# 필요한 패키지 설치 (requirements.txt 파일이 없는 경우)
+# Streamlit Cloud에서는 requirements.txt 파일을 통해 의존성을 관리하는 것이 좋습니다.
 
 # 페이지 설정
 st.set_page_config(
@@ -251,18 +255,23 @@ if direct_button and direct_appid:
             
             with tab2:
                 if price_data:
+                    # matplotlib을 사용한 차트 생성 (plotly 대신)
                     chart_df = pd.DataFrame([(item['store'], item['price']) for item in price_data], 
                                            columns=['스토어', '가격'])
-                    fig = px.bar(
-                        chart_df, 
-                        x='스토어', 
-                        y='가격',
-                        title=f"{game_name} 스토어별 가격 비교",
-                        color='스토어',
-                        color_discrete_sequence=px.colors.qualitative.Set3
-                    )
-                    fig.update_layout(xaxis_title="스토어", yaxis_title="가격 (원)")
-                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    fig, ax = plt.subplots(figsize=(10, 6))
+                    bars = ax.bar(chart_df['스토어'], chart_df['가격'])
+                    
+                    # 막대 색상 설정
+                    for i, bar in enumerate(bars):
+                        bar.set_color(f'C{i}')
+                    
+                    ax.set_ylabel('가격 (원)')
+                    ax.set_title(f"{game_name} 스토어별 가격 비교")
+                    plt.xticks(rotation=45, ha='right')
+                    plt.tight_layout()
+                    
+                    st.pyplot(fig)
                 else:
                     st.info("차트를 표시할 데이터가 없습니다.")
         else:
